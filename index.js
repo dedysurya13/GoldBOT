@@ -90,12 +90,19 @@ bot.onText(/\/set-harga-emas (\d+)/, (msg, match) => {
 // ==== /emas ====
 bot.onText(/\/emas/, async (msg) => {
   const threshold = getThreshold();
-  const { pricePerGramIDR } = await getGoldPricePerGramInIDR();
+  const { pricePerGramIDR, pricePerGramUSD, usdToIdr } =
+    await getGoldPricePerGramInIDR();
 
   bot.sendMessage(
     msg.chat.id,
     `Harga Emas Saat Ini: Rp${Math.round(pricePerGramIDR).toLocaleString()}/gram
     \nBatas Alert: Rp${threshold.toLocaleString()}/gram
     \n\nWaktu: ${getTimestamp()}`
+  );
+
+  console.log(
+    `Harga emas per gram: Rp${pricePerGramIDR.toLocaleString()} | USD ${pricePerGramUSD.toFixed(
+      2
+    )} | Kurs: ${usdToIdr} | Waktu: ${getTimestamp()}`
   );
 });

@@ -22,9 +22,7 @@ function setThreshold(newValue) {
 }
 
 async function getGoldPricePerGramInIDR() {
-  const goldRes = await axios.get("https://www.goldapi.io/api/XAU/USD", {
-    headers: { "x-access-token": process.env.GOLD_API_KEY },
-  });
+  const goldRes = await axios.get("https://api.gold-api.com/price/XAU");
 
   const pricePerOunceUSD = goldRes.data.price;
 
@@ -46,17 +44,15 @@ async function checkPrice() {
     const thresholdIDRPerGram = getThreshold();
 
     console.log(
-      `Harga emas per gram: Rp${pricePerGramIDR.toLocaleString()} | USD ${pricePerGramUSD.toFixed(
-        2
-      )} | Kurs: ${usdToIdr}`
+      `Harga emas per gram: Rp${pricePerGramIDR.toLocaleString()} | USD ${pricePerGramUSD.toFixed(2)} | Kurs: ${usdToIdr} | Waktu: ${getTimestamp()}`
     );
 
     if (pricePerGramIDR < thresholdIDRPerGram) {
       await bot.sendMessage(
         CHAT_ID,
-        `⚠️⚠️⚠️\n\nHarga emas turun!\n\nRp${Math.round(
-          pricePerGramIDR
-        ).toLocaleString()}/gram\n📉 Batas alert: Rp${thresholdIDRPerGram.toLocaleString()}/gram`
+        `⚠️⚠️⚠️\n\nHarga emas turun!\n\nRp${Math.round(pricePerGramIDR).toLocaleString()}/gram
+        \nBatas alert: Rp${thresholdIDRPerGram.toLocaleString()}/gram
+        \n\nWaktu: ${getTimestamp()}`
       );
     }
   } catch (err) {
@@ -64,12 +60,15 @@ async function checkPrice() {
   }
 }
 
+function getTimestamp() {
+  return new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
+}
 
 checkPrice();
-setInterval(checkPrice, 1000 * 60 * 30);
+setInterval(checkPrice, 1000 * 60 * 15);
 
 // ==== /set <angka> ====
-bot.onText(/\/set (\d+)/, (msg, match) => {
+bot.onText(/\/set-harga-emas (\d+)/, (msg, match) => {
   const chatId = msg.chat.id;
   const newThreshold = parseInt(match[1]);
 
@@ -88,15 +87,15 @@ bot.onText(/\/set (\d+)/, (msg, match) => {
   );
 });
 
-// ==== /status ====
-bot.onText(/\/status/, async (msg) => {
+// ==== /emas ====
+bot.onText(/\/emas/, async (msg) => {
   const threshold = getThreshold();
   const { pricePerGramIDR } = await getGoldPricePerGramInIDR();
 
   bot.sendMessage(
     msg.chat.id,
-    `Harga Emas Saat Ini: Rp${Math.round(
-      pricePerGramIDR
-    ).toLocaleString()}/gram\nBatas Alert: Rp${threshold.toLocaleString()}/gram`
+    `Harga Emas Saat Ini: Rp${Math.round(pricePerGramIDR).toLocaleString()}/gram
+    \nBatas Alert: Rp${threshold.toLocaleString()}/gram
+    \n\nWaktu: ${getTimestamp()}`
   );
 });
